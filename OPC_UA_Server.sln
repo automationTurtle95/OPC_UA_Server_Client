@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31808.319
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OPC_UA_Server", "OPC_UA_Server\OPC_UA_Server.csproj", "{111594A8-8A1D-4C34-B199-995B84E396EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OPC_UA_Client", "OPC_UA_Client\OPC_UA_Client.csproj", "{4887ACC5-7179-4C9D-A5B3-F7B1F2320AAB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{111594A8-8A1D-4C34-B199-995B84E396EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{111594A8-8A1D-4C34-B199-995B84E396EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{111594A8-8A1D-4C34-B199-995B84E396EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{111594A8-8A1D-4C34-B199-995B84E396EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4887ACC5-7179-4C9D-A5B3-F7B1F2320AAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4887ACC5-7179-4C9D-A5B3-F7B1F2320AAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4887ACC5-7179-4C9D-A5B3-F7B1F2320AAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4887ACC5-7179-4C9D-A5B3-F7B1F2320AAB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AE10972E-1960-425D-8B76-B9D181C5ED76}
+	EndGlobalSection
+EndGlobal
