@@ -11,6 +11,7 @@ namespace OPC_UA_Client // Note: actual namespace depends on the project name.
     {
         public static double a = 10;
         public static double b = 20;
+        public static bool loop = true;
 
         public static void Main(string[] args)
         {
@@ -23,6 +24,7 @@ namespace OPC_UA_Client // Note: actual namespace depends on the project name.
             object[] result;
 
             Random random = new Random();
+            Random randomLetter = new Random();
 
             using (var client = new OpcClient("opc.tcp://localhost:4840"))
             {
@@ -46,7 +48,7 @@ namespace OPC_UA_Client // Note: actual namespace depends on the project name.
                 Console.WriteLine($"[opc-ua-client] Write node = {status}");
 
                 //Write node attribute
-                status = client.WriteNode("ns=2;s=MAchine/Parameter", OpcAttribute.DisplayName, "Parameter");
+                status = client.WriteNode("ns=2;s=Machine/Parameter", OpcAttribute.DisplayName, "Parameter");
                 Console.WriteLine($"[opc-ua-client] Write node display name = {status}");
 
                 //read/write node
@@ -64,68 +66,154 @@ namespace OPC_UA_Client // Note: actual namespace depends on the project name.
                 }*/
                 Console.WriteLine();
 
-                for (int i = 0; i < 5; i++)
+                while (loop)
                 {
-                    //Call methodA
-                    result = client.CallMethod("ns=2;s=Machine", "ns=2;s=Machine/MethodA", a+i, b);
-                    Console.WriteLine($"[opc-ua-client] call methodA = {result[0]}");
-                    status = client.WriteNode("ns=2;s=Machine/methodACall", true);
-                }
+                    string a = "";
+                    string b = "";
+                    double x = 0;
+                    double y = 0;
 
-                for (int i = 0; i < 10; i++)
-                {
-                    ////Call methodB
-                    result = client.CallMethod("ns=2;s=Machine", "ns=2;s=Machine/MethodB", a+i, b);
-                    Console.WriteLine($"[opc-ua-client] call methodB = {result[0]}");
-                    status = client.WriteNode("ns=2;s=Machine/methodBCall", true);
-                }
-
-                for (int i = 0; i < 7; i++)
-                {
-                    ////Call methodC
-                    result = client.CallMethod("ns=2;s=Machine", "ns=2;s=Machine/MethodC", a, b+i);
-                    Console.WriteLine($"[opc-ua-client] call methodC = {result[0]}");
-                    status = client.WriteNode("ns=2;s=Machine/methodCCall", true);
-                }
-
-                for (int i = 0; i < 3; i++)
-                {
-                    //Call methodD
-                    result = client.CallMethod("ns=2;s=Machine", "ns=2;s=Machine/MethodD", a, b+i);
-                    Console.WriteLine($"[opc-ua-client] call methodD = {result[0]}");
-                    status = client.WriteNode("ns=2;s=Machine/methodDCall", true);
-                }
-
-                int rnd = random.Next(20, 70);
-
-                for (int i = 0; i < rnd; i++)
-                {
-                    ////Call methodC
-                    result = client.CallMethod("ns=2;s=Machine", "ns=2;s=Machine/MethodC", a, b+i);
-                    Console.WriteLine($"[opc-ua-client] call methodC = {result[0]}");
-                    status = client.WriteNode("ns=2;s=Machine/methodCCall", true);
-                }
-
-                value = client.ReadNode("ns=2;s=Machine/CallsMethodC");
-
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine($"Random number {rnd} --- Calls Method C {value}");
-                Console.ForegroundColor = ConsoleColor.White;
-
-                if (rnd == value)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("Correct number of methodcalls!");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Choose a operation: '+'  '-'  '*'  '/' for exit type 'q'");
                     Console.ForegroundColor = ConsoleColor.White;
-                }
+                    string operation = Console.ReadLine();
 
-                Console.WriteLine();
+                    if (operation == "q")
+                    {
+                        break;
+                    }
+
+                    Console.WriteLine("First Number:");
+                    a = Console.ReadLine();
+                    x = checkInput(a);
+
+                    Console.WriteLine("Second Number:");
+                    b = Console.ReadLine();
+                    y = checkInput(b);
+
+                    if (operation == "+")
+                    {
+                        //Call methodA
+                        callMethod(client, x, y, "A", true);
+                    }
+                    else if (operation=="-")
+                    {
+                        ////Call methodB
+                        callMethod(client, x, y, "B", true);
+                    }
+                    else if (operation=="*")
+                    {
+                        ////Call methodC
+                        callMethod(client, x, y, "C", true);
+                    }
+                    else if (operation=="/")
+                    {
+                        //Call methodD
+                        callMethod(client, x, y, "D", true);
+                    }
+                    else
+                    {
+                        redConsole("Please check your input!");
+                    }
+
+                }
+                Console.WriteLine("Calculations finished!");
+
+                printMethodCalls(client);
+
+                loop = true;
+
+                bool countActive = false;
+                while (loop)
+                {
+                    int nr = random.Next(1, 150);
+                    char l = (char)randomLetter.Next('A', 'D');
+                    string letter = Convert.ToString(l);
+                    double newX = 0;
+                    double newY = 0;
+                    for (int i = 0; i < nr; i++)
+                    {
+                        newX = random.Next(10, 500);
+                        newY = random.Next(-10, 100);
+                        callMethod(client, newX, newY, letter, countActive);
+                    }
+                    greenConsole($"Random Number {nr} for method {letter}!");
+                    Console.WriteLine("Again? y/n");
+                    string again = "";
+                    again = Console.ReadLine();
+                    if (again == "n")
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Now with the method counter? y/n");
+                        string check = Console.ReadLine();
+                        if (check == "y")
+                        {
+                            countActive = true;
+                        }
+                        else
+                        {
+                            countActive = false;
+                        }
+                    }
+                }
+                printMethodCalls(client);
             }
             Console.WriteLine("[opc-ua-client] Press enter to exit");
 
 
         }
 
+        static void callMethod(OpcClient client, double x, double y, string methodLetter, bool countCalls)
+        {
+            OpcStatus status = client.WriteNode($"ns=2;s=Machine/method{methodLetter}Call", countCalls);
+            if (status.IsGood)
+            {
+                object[] result = client.CallMethod($"ns=2;s=Machine", $"ns=2;s=Machine/Method{methodLetter}", x, y);
+                Console.WriteLine($"Result method{methodLetter} {x}/{y} = {result[0]}");
+            }
+            else
+            {
+                redConsole("Check Input");
+            }
+        }
+
+        static void greenConsole(string text)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(text);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        static void redConsole(string text)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(text);
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
+        static void printMethodCalls(OpcClient client)
+        {
+            OpcValue value;
+
+            Console.ForegroundColor= ConsoleColor.Green;
+            Console.WriteLine("Methodcalls:");
+            Console.ForegroundColor = ConsoleColor.White;
+
+            value = client.ReadNode("ns=2;s=Machine/NrMethodACalls");
+            Console.WriteLine($"Method A {value} called");
+
+            value = client.ReadNode("ns=2;s=Machine/NrMethodBCalls");
+            Console.WriteLine($"Method B {value} called");
+
+            value = client.ReadNode("ns=2;s=Machine/NrMethodCCalls");
+            Console.WriteLine($"Method C {value} called");
+
+            value = client.ReadNode("ns=2;s=Machine/NrMethodDCalls");
+            Console.WriteLine($"Method D {value} called");
+        }
 
 
         static void Print(OpcNodeInfo parent, int level = 0)
@@ -139,6 +227,28 @@ namespace OPC_UA_Client // Note: actual namespace depends on the project name.
             {
                 Print(child, level+1);
             }
+        }
+
+        static double checkInput(string input)
+        {
+            bool loop = true;
+            double number = 0;
+            while (loop)
+            {
+                bool success = double.TryParse(input, out number);
+                if (success)
+                {
+                    loop=false;
+                }
+                else
+                {
+                    Console.WriteLine("Enter a number");
+                    Console.Write("Check your input!\t");
+                    input = Console.ReadLine();
+                }
+            }
+
+            return number;
         }
     }
 }

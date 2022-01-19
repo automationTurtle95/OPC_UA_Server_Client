@@ -44,9 +44,14 @@ namespace OPC_UA_Server // Note: actual namespace depends on the project name.
             Console.WriteLine("Called method A: add to numbers");
             Console.ForegroundColor = ConsoleColor.White;
 
-            if(a.GetType() != typeof(double) || b.GetType() != typeof(double))
+            if (a.GetType() != typeof(double) || b.GetType() != typeof(double))
             {
                 throw new OpcException();
+            }
+            if (methodACall.Value == true)
+            {
+                nrMethodACalls.Value++;
+                Console.WriteLine($"Method A {nrMethodACalls.Value} Calls");
             }
 
             return a+b;
@@ -62,6 +67,11 @@ namespace OPC_UA_Server // Note: actual namespace depends on the project name.
             {
                 throw new OpcException();
             }
+            if (methodBCall.Value == true)
+            {
+                nrMethodBCalls.Value++;
+                Console.WriteLine($"Method B {nrMethodBCalls.Value} Calls");
+            }
             return a-b;
         }
 
@@ -73,6 +83,11 @@ namespace OPC_UA_Server // Note: actual namespace depends on the project name.
             if (a.GetType() != typeof(double) || b.GetType() != typeof(double))
             {
                 throw new OpcException();
+            }
+            if (methodCCall.Value == true)
+            {
+                nrMethodCCalls.Value++;
+                Console.WriteLine($"Method C {nrMethodCCalls.Value} Calls");
             }
             return a*b;
         }
@@ -86,6 +101,11 @@ namespace OPC_UA_Server // Note: actual namespace depends on the project name.
             {
                 throw new OpcException();
             }
+            if (methodDCall.Value == true)
+            {
+                nrMethodDCalls.Value++;
+                Console.WriteLine($"Method D {nrMethodDCalls.Value} Calls");
+            }
             return a/b;
         }
 
@@ -98,10 +118,17 @@ namespace OPC_UA_Server // Note: actual namespace depends on the project name.
             version = new OpcDataVariableNode<int>("Version", 1);
             random = new OpcDataVariableNode<int>("Random", 0);
 
-            nrMethodACalls = new OpcDataVariableNode<int>("CallsMethodA", 1);
-            nrMethodBCalls = new OpcDataVariableNode<int>("CallsMethodB", 1);
-            nrMethodCCalls = new OpcDataVariableNode<int>("CallsMethodC", 1);
-            nrMethodDCalls = new OpcDataVariableNode<int>("CallsMethodD", 1);
+            nrMethodACalls = new OpcDataVariableNode<int>(machine, "NrMethodACalls", 0);
+            nrMethodACalls.WriteVariableValueCallback = WriteParameter;
+
+            nrMethodBCalls = new OpcDataVariableNode<int>(machine, "NrMethodBCalls", 0);
+            nrMethodBCalls.WriteVariableValueCallback = WriteParameter;
+
+            nrMethodCCalls = new OpcDataVariableNode<int>(machine, "NrMethodCCalls", 0);
+            nrMethodCCalls.WriteVariableValueCallback = WriteParameter;
+
+            nrMethodDCalls = new OpcDataVariableNode<int>(machine, "NrMethodDCalls", 0);
+            nrMethodDCalls.WriteVariableValueCallback = WriteParameter;
 
             List<OpcDataVariableNode<int>> Calls = new List<OpcDataVariableNode<int>>();
             Calls.Add(nrMethodACalls);
@@ -113,26 +140,15 @@ namespace OPC_UA_Server // Note: actual namespace depends on the project name.
             parameter.WriteVariableValueCallback = WriteParameter;
 
             methodACall = new OpcDataVariableNode<bool>(machine, "methodACall", false);
-            methodACall.WriteVariableValueCallback = WriteParameter;
 
             methodBCall = new OpcDataVariableNode<bool>(machine, "methodBCall", false);
-            methodBCall.WriteVariableValueCallback = WriteParameter;
 
             methodCCall = new OpcDataVariableNode<bool>(machine, "methodCCall", false);
-            methodCCall.WriteVariableValueCallback = WriteParameter;
 
             methodDCall = new OpcDataVariableNode<bool>(machine, "methodDCall", false);
-            methodDCall.WriteVariableValueCallback = WriteParameter;
-
-            List<OpcDataVariableNode<bool>> Called = new List<OpcDataVariableNode<bool>>();
-            Called.Add(methodACall);
-            Called.Add(methodBCall);
-            Called.Add(methodCCall);
-            Called.Add(methodDCall);
 
             //####### Methodenknoten anlegen
             methodA = new OpcMethodNode(machine, new OpcName("MethodA"), new Func<double, double, double>(MethodA));
-
             methodB = new OpcMethodNode(machine, new OpcName("MethodB"), new Func<double, double, double>(MethodB));
             methodC = new OpcMethodNode(machine, new OpcName("MethodC"), new Func<double, double, double>(MethodC));
             methodD = new OpcMethodNode(machine, new OpcName("MethodD"), new Func<double, double, double>(MethodD));
@@ -140,22 +156,14 @@ namespace OPC_UA_Server // Note: actual namespace depends on the project name.
             using (var server = new OpcServer("opc.tcp://localhost:4840/", machine))
             {
                 server.Start();
+
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Server started!");
                 Console.ForegroundColor = ConsoleColor.White;
 
                 while (true)
                 {
-                    for (int i = 0; i < Called.Count; i++)
-                    {
-                        if (Called[i].Value == true)
-                        {
-                            Calls[i].Value++;
-                            Called[i].Value = false;
-                            Console.WriteLine($"Calls Method: {Calls[i].Value}");
-                        }
-                    }
-
+                    
                     foreach (var item in Calls)
                     {
                         item.Status.Update(OpcStatusCode.Good);
